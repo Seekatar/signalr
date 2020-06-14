@@ -33,8 +33,8 @@ namespace server
             services.AddCors(options => 
                 options.AddPolicy(name: CorsPolicy, builder => {
                     builder
-                    // .AllowAnyOrigin()  // can't use wtih allow creds
-                    .WithOrigins("http://localhost:8082") // use https on client and these settings get CORS to work
+                    // .AllowAnyOrigin()  // can't use with allow creds
+                    .WithOrigins("http://localhost:8080", "http://localhost:8081", "http://localhost:8082") // use https on client and these settings get CORS to work
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();

@@ -21,9 +21,11 @@ export default {
   methods: {
     // This is called from the server through SignalR
     onNewMessage({ timestamp, senderUsername, text, title, type }) {
-      console.log(timestamp)
-      console.log(`>>>>Yay! Title: ${title} Text:${text} Timestamp:${timestamp} User:${senderUsername} Type:${type}`);
+      console.log(timestamp);
+      console.log(
+        `>>>>Yay! Title: ${title} Text:${text} Timestamp:${timestamp} User:${senderUsername} Type:${type}`
+      );
     }
   }
-}
+};
 </script>
