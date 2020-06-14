@@ -1,5 +1,6 @@
 import { HubConnectionBuilder, LogLevel } from "@aspnet/signalr"
 
+// CORS issue w/o https
 const url = "https://localhost:5001/messagehub";
 
 export default {
@@ -9,6 +10,7 @@ export default {
       .configureLogging(LogLevel.Debug)
       .build();
     
+    // register $messageHub on all Vue components
     const messageHub = new Vue();
     Vue.prototype.$messageHub = messageHub;
 
@@ -16,6 +18,18 @@ export default {
       messageHub.$emit('new-message', {...message})
     });
 
-    connection.start();
-}
+    // start with reconnect logic
+    let startedPromise = null
+    function start () {
+    startedPromise = connection.start().catch(err => {
+        console.error('Failed to connect with hub', err)
+        return new Promise((resolve, reject) => 
+        setTimeout(() => start().then(resolve).catch(reject), 5000))
+    })
+    return startedPromise
+    }
+    connection.onclose(() => start())
+ 
+    start()
+  }
 }
