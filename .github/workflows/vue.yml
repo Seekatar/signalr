@@ -3,8 +3,14 @@ name: Vue CI
 on:
   push:
     branches: [ main ]
+    paths: 
+    - 'vue/**'
+    - '.github/workflows/vue.yml'
   pull_request:
     branches: [ main ]
+    paths: 
+    - 'vue/**'
+    - '.github/workflows/vue.yml'
 
 jobs:
   build:
