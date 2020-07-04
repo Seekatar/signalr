@@ -9,7 +9,7 @@ export default {
       .withUrl(url)
       .configureLogging(LogLevel.Debug)
       .build();
-    
+
     // register $messageHub on all Vue components
     const messageHub = new Vue();
     Vue.prototype.$messageHub = messageHub;
@@ -19,17 +19,17 @@ export default {
     });
 
     // start with reconnect logic
-    let startedPromise = null
+    let startedPromise
     function start () {
     startedPromise = connection.start().catch(err => {
         console.error('Failed to connect with hub', err)
-        return new Promise((resolve, reject) => 
+        return new Promise((resolve, reject) =>
         setTimeout(() => start().then(resolve).catch(reject), 5000))
     })
     return startedPromise
     }
     connection.onclose(() => start())
- 
+
     start()
   }
 }
