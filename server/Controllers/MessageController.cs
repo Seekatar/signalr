@@ -24,11 +24,11 @@ namespace server.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Send()
+        public async Task<IActionResult> Send([FromQuery] string msg = "")
         {
-            _logger.LogInformation("About to send message");
-            await _hubContext.Clients.All.SendAsync("ReceiveMessage", new Message { Title = "My Title", Text = "Testing", Timestamp = DateTimeOffset.Now, SenderUsername = "Jim", Type = "INFO" });
-            return Ok("test");
+            _logger.LogInformation($"About to send message: '{msg}'");
+            await _hubContext.Clients.All.SendAsync("ReceiveMessage", new Message { Title = "My Title", Text = msg, Timestamp = DateTimeOffset.Now, SenderUsername = "Jim", Type = "INFO" });
+            return Ok($"Sent test message with Test = '{msg}'");
         }
     }
 }
