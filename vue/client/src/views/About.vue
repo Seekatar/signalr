@@ -1,7 +1,10 @@
 <template>
   <div class="about">
     <h1>This is an aboot page</h1>
-    <a href="https://localhost:5001/message?msg=From Vue" target="_blank">Localhost</a>
+    <a href="https://localhost:5001/message?msg=From Vue" target="_blank">
+      Localhost
+    </a>
+    <div>Jwt is {{ jwt }}</div>
     <v-snackbar v-model="snackbar" :timeout="timeout" :color="color">
       {{ text }}
 
@@ -15,12 +18,15 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   data: () => ({
     snackbar: false,
     text: "",
     timeout: -1,
-    color: "success"
+    color: "success",
+    jwt: "",
   }),
   props: {
     question: {
@@ -29,6 +35,10 @@ export default {
     }
   },
   created() {
+    axios.get("https://localhost:5001/message/jwt").then( response => {
+      this.jwt = response.data
+    })
+
     // Listen to score changes coming from SignalR events
     this.$messageHub.$on("new-message", this.onNewMessage);
     console.log("started listening...");

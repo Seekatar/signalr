@@ -1,12 +1,19 @@
 import { HubConnectionBuilder, LogLevel } from "@aspnet/signalr"
+import axios from "axios"
 
 // CORS issue w/o https
 const url = "https://localhost:5001/messagehub";
 
 export default {
   install(Vue: any) {
+
     const connection = new HubConnectionBuilder()
-      .withUrl(url)
+      .withUrl(url, {accessTokenFactory: () => {
+        return axios.get("https://localhost:5001/message/jwt").then( response => {
+          return response.data
+        } )
+      }
+       } )
       .configureLogging(LogLevel.Debug)
       .build();
 
