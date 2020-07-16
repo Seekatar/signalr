@@ -7,7 +7,7 @@ namespace server.Models
         // this just "happen" to match up with
         // Vuetify colors for snackbar
         public const string Information = "info";
-        public const string Scuccess = "success";
+        public const string Success = "success";
         public const string Warning = "warning";
         public const string Error = "error";
 

@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -36,6 +34,7 @@ namespace server.Controllers
         [AllowAnonymous]
         public IActionResult GetJwt([FromQuery] string userId = "fflintstone")
         {
+            _logger.LogDebug($"Getting jwt for {userId}");
             return Ok(FakeJwt(userId));
         }
 
@@ -51,8 +50,9 @@ namespace server.Controllers
                     new Claim(ClaimTypes.Name, userId),
                     new Claim(ClaimTypes.Actor, userId),
                     new Claim(ClaimTypes.Email, $"{userId}@rockhead.com"),
-                    // this is what signalR uses by default, you can change the default
+                    // this is what SignalR uses as ClaimsPrincipal by default, you can change the default
                     // with an IUserIdProvider
+                    // https://docs.microsoft.com/en-us/aspnet/core/signalr/authn-and-authz?view=aspnetcore-3.1#use-claims-to-customize-identity-handling
                     new Claim(ClaimTypes.NameIdentifier, userId)
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
@@ -65,9 +65,31 @@ namespace server.Controllers
         [HttpGet]
         public async Task<IActionResult> Send([FromQuery] string msg = "", [FromQuery] string type = Message.Information)
         {
-            _logger.LogInformation($"About to send message: '{msg}'");
-            await _hubContext.Clients.All.SendAsync("ReceiveMessage", new Message { Title = "My Title", Text = msg, Timestamp = DateTimeOffset.Now, SenderUsername = "Jim", Type = type });
+            _logger.LogDebug($"About to send message: '{msg}' of type {type}");
+            await _hubContext.Clients.All.SendAsync("ReceiveMessage", new Message { Title = "My Title", Text = msg, Timestamp = DateTimeOffset.Now, SenderUsername = "Server", Type = type });
             return Ok($"Sent test message with Test = '{msg}'");
         }
+
+        [HttpGet("send-to")]
+        public async Task<IActionResult> SendTo([FromQuery] string userId, [FromQuery] string msg, [FromQuery] string type=Message.Information)
+        {
+            // always get proxy bad, even if no userId matches
+            var proxy = _hubContext.Clients.User(userId);
+
+            _logger.LogDebug($"About to send message to: '{userId}' of type {type}");
+
+            await proxy.SendAsync("ReceiveMessage",
+                            new Message
+                            {
+                                Title = "Info",
+                                Text = $"Hello {userId}. {msg}",
+                                Timestamp = DateTimeOffset.Now,
+                                SenderUsername = userId,
+                                Type = type
+                            });
+
+            return Ok($"Sent test to '{userId}'");
+        }
+
     }
 }
