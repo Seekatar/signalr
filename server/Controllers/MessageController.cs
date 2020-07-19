@@ -50,10 +50,11 @@ namespace server.Controllers
                     new Claim(ClaimTypes.Name, userId),
                     new Claim(ClaimTypes.Actor, userId),
                     new Claim(ClaimTypes.Email, $"{userId}@rockhead.com"),
+                    new Claim(ClaimTypes.GroupSid, "INS1") // " http://schemas.microsoft.com/ws/2008/06/identity/claims/clientCode", "INS1")
                     // this is what SignalR uses as ClaimsPrincipal by default, you can change the default
                     // with an IUserIdProvider
                     // https://docs.microsoft.com/en-us/aspnet/core/signalr/authn-and-authz?view=aspnetcore-3.1#use-claims-to-customize-identity-handling
-                    new Claim(ClaimTypes.NameIdentifier, userId)
+                    // new Claim(ClaimTypes.NameIdentifier, userId)
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -71,24 +72,33 @@ namespace server.Controllers
         }
 
         [HttpGet("send-to")]
-        public async Task<IActionResult> SendTo([FromQuery] string userId, [FromQuery] string msg, [FromQuery] string type=Message.Information)
+        public async Task<IActionResult> SendTo([FromQuery] string userId, [FromQuery] string msg, [FromQuery] string type = Message.Information)
         {
-            // always get proxy bad, even if no userId matches
-            var proxy = _hubContext.Clients.User(userId);
+            IClientProxy proxy = null;
+            if (userId.StartsWith('@'))
+            {
+                proxy = _hubContext.Clients.Group(userId.Substring(1));
+            }
+            else
+            {
+                // always get proxy bad, even if no userId matches
+                proxy = _hubContext.Clients.User(userId);
+            }
 
             _logger.LogDebug($"About to send message to: '{userId}' of type {type}");
 
             await proxy.SendAsync("ReceiveMessage",
                             new Message
                             {
-                                Title = "Info",
+                                Title = type,
                                 Text = $"Hello {userId}. {msg}",
                                 Timestamp = DateTimeOffset.Now,
                                 SenderUsername = userId,
                                 Type = type
                             });
 
-            return Ok($"Sent test to '{userId}'");
+
+            return Ok($"Sent message to '{userId}'");
         }
 
     }

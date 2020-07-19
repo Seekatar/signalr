@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <h1>This is an aboot page</h1>
+    <h1>This is a page with SignalR</h1>
     <div>
       <v-form>
         <v-container>
@@ -29,11 +29,13 @@
 
 <script>
 import axios from "axios";
-import msgHub from "../message-hub";
+import messageHub from "../message-hub";
 
 // matches C#
 const messageTypes = {
   info: "info",
+  success: "success",
+  warning: "warning",
   error: "error"
 };
 
@@ -44,7 +46,7 @@ export default {
     timeout: -1,
     color: "success",
     jwt: "",
-    userId: msgHub.userId,
+    userId: messageHub.userId,
     message: ""
   }),
   props: {
@@ -54,6 +56,10 @@ export default {
     }
   },
   created() {
+    if (this.$route.query.userId.length > 0) {
+      this.userId = this.$route.query.userId
+      messageHub.userId = this.userId
+    }
     axios
       .get(`https://localhost:5001/message/jwt?userId=${this.userId}`)
       .then(response => {
@@ -61,13 +67,13 @@ export default {
       });
 
     // Listen to score changes coming from SignalR events
-    this.$messageHub.$on(msgHub.newMessageName, this.onNewMessage);
+    this.$messageHub.$on(messageHub.newMessageName, this.onNewMessage);
     console.log("started listening...");
   },
   methods: {
     setUser() {
       console.log(`User set to ${this.userId}`);
-      msgHub.userId = this.userId;
+      messageHub.userId = this.userId;
     },
     // This is called from the server through SignalR
     onNewMessage({ timestamp, senderUsername, text, title, type }) {
@@ -75,7 +81,7 @@ export default {
       this.text = `${type}: ${text}`;
       this.snackbar = true;
       this.color = type; // should be Vuetify success/fail color
-      if (type === messageTypes.info) {
+      if (type === messageTypes.info || type === messageTypes.success) {
         this.timeout = 3000;
       } else {
         this.timeout = -1;

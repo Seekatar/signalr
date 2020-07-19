@@ -1,3 +1,5 @@
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
@@ -31,7 +33,12 @@ namespace server.Hubs
         public override async Task OnConnectedAsync()
         {
             _logger.LogInformation($"Connected: {Context.UserIdentifier}");
-            await Groups.AddToGroupAsync(Context.ConnectionId, "SignalR Users");
+            var clientCode = Context.User.Claims.SingleOrDefault(c => c.Type == ClaimTypes.GroupSid)?.Value;
+            if (!string.IsNullOrEmpty(clientCode))
+            {
+                _logger.LogInformation($"With group of {clientCode}");
+                await Groups.AddToGroupAsync(Context.ConnectionId, clientCode);
+            }
             await base.OnConnectedAsync();
         }
     }

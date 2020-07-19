@@ -2,19 +2,26 @@
   <div class="hello">
     <v-container>
       <v-row>
-        <v-col cols="4">
-          <v-text-field v-model="userId" label="UserId"></v-text-field>
-        </v-col>
-        <v-col cols="4">
-          <v-text-field v-model="msgType" label="Message Type"></v-text-field>
+        <v-col cols="8">
+          <v-text-field v-model="userId" label="Send to userId, @INS1 for group, empty for all"></v-text-field>
         </v-col>
       </v-row>
       <v-row>
         <v-col cols="4">
           <v-text-field v-model="message" label="Message"></v-text-field>
         </v-col>
-        <v-col cols="6">
-          <v-btn v-on:click="sendMessage">Send Message</v-btn>
+        <v-col cols="4">
+          <v-combobox
+            v-model="msgType"
+            :items="msgTypes"
+            label="Select a message type"
+          >
+          </v-combobox>
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col cols="8">
+          <v-btn v-on:click="sendMessage" :disabled='message.length == 0'>Send Message</v-btn>
         </v-col>
       </v-row>
     </v-container>
@@ -26,10 +33,11 @@ import { Component, Prop, Vue } from "vue-property-decorator";
 import axios from "axios";
 
 @Component
-export default class HelloWorld extends Vue {
+export default class MessageSender extends Vue {
   @Prop() private msg!: string;
   message = "";
   userId = "";
+
   // this just "happen" to match up with
   // Vuetify colors for snackbar
   msgTypes = ["info", "success", "warning", "error"];
