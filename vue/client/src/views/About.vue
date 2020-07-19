@@ -1,5 +1,5 @@
 <template>
-  <div class="about">
+  <v-app>
     <h1>This is an aboot page</h1>
     <div>
       <v-form>
@@ -19,12 +19,12 @@
     <v-snackbar v-model="snackbar" :timeout="timeout" :color="color">
       {{ text }}
       <template v-slot:action="{ attrs }">
-        <v-btn color="pink" text v-bind="attrs" @click="snackbar = false"
+        <v-btn dark text v-bind="attrs" @click="snackbar = false"
           >Close</v-btn
         >
       </template>
     </v-snackbar>
-  </div>
+  </v-app>
 </template>
 
 <script>
@@ -61,7 +61,7 @@ export default {
       });
 
     // Listen to score changes coming from SignalR events
-    this.$messageHub.$on("new-message", this.onNewMessage);
+    this.$messageHub.$on(msgHub.newMessageName, this.onNewMessage);
     console.log("started listening...");
   },
   methods: {
