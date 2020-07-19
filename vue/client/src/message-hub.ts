@@ -1,4 +1,4 @@
-import { HubConnectionBuilder, LogLevel } from "@aspnet/signalr";
+import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import axios from "axios";
 
 // CORS issue w/o https
@@ -6,6 +6,8 @@ const url = "https://localhost:5001/messagehub";
 
 export default {
   userId: "wilma",
+  newMessageName: "new-message",
+
   install(Vue: any) {
     const connection = new HubConnectionBuilder()
       .withUrl(url, {
@@ -21,7 +23,7 @@ export default {
           return response.data;
         }
       })
-      //?? .withAutomaticReconnect()
+      .withAutomaticReconnect()
       .configureLogging(LogLevel.Debug)
       .build();
 
@@ -30,27 +32,21 @@ export default {
     Vue.prototype.$messageHub = messageHub;
 
     connection.on("ReceiveMessage", (message: any) => {
-      messageHub.$emit("new-message", { ...message });
+      messageHub.$emit(this.newMessageName, { ...message });
     });
 
-    // start with reconnect logic
-    let startedPromise;
-    function start() {
-      startedPromise = connection.start().catch(err => {
+    async function start() {
+      try {
+        await connection.start()
+      } catch (err) {
         console.error("Failed to connect with hub", err);
-        return new Promise((resolve, reject) =>
-          setTimeout(
-            () =>
-              start()
-                .then(resolve)
-                .catch(reject),
-            5000
-          )
-        );
-      });
-      return startedPromise;
+        console.log(err);
+        setTimeout(() => start(), 5000);
+      }
+      return;
     }
-    connection.onclose(() => start());
+
+    connection.onclose(async () => await start());
 
     start();
   }
