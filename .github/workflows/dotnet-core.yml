@@ -3,8 +3,14 @@ name: .NET Core
 on:
   push:
     branches: [ main ]
+    paths: 
+    - 'server/**'
+    - '.github/workflows/dotnet-core.yml'
   pull_request:
     branches: [ main ]
+    paths: 
+    - 'server/**'
+    - '.github/workflows/dotnet-core.yml'
 
 jobs:
   build:
