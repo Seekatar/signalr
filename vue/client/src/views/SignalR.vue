@@ -1,15 +1,16 @@
 <template>
   <v-app>
-    <h1>This is a page with SignalR</h1>
+    <h1>This page shows SignalR messages from Home</h1>
+    <p>Use http://localhost:8080/signalr?userId=&lt;userId&gt; to switch user since button doesn't work now</p>
     <div>
       <v-form>
         <v-container>
           <v-row>
             <v-col cols="6">
-              <v-text-field v-model="userId" label="UserId"></v-text-field>
+              <v-text-field v-model="userId" label="UserId" disabled></v-text-field>
             </v-col>
             <v-col cols="6">
-              <v-btn v-on:click="setUser()">Set User</v-btn>
+              <v-btn v-on:click="setUser()" disabled>Set User</v-btn>
             </v-col>
           </v-row>
         </v-container>
@@ -56,10 +57,12 @@ export default {
     }
   },
   created() {
-    if (this.$route.query.userId.length > 0) {
+    if (this.$route.query.userId && this.$route.query.userId.length > 0) {
       this.userId = this.$route.query.userId
-      messageHub.userId = this.userId
+    } else {
+      this.userId = "wilma";
     }
+    messageHub.userId = this.userId
     axios
       .get(`https://localhost:5001/message/jwt?userId=${this.userId}`)
       .then(response => {
