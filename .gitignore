@@ -390,5 +390,6 @@ server/.idea/.idea.server-new.dir/.idea/.gitignore
 server/.idea/.idea.server-new.dir/.idea/encodings.xml
 server/.idea/.idea.server-new.dir/.idea/indexLayout.xml
 server/.idea/.idea.server-new.dir/.idea/vcs.xml
-server/Properties/launchSettings.json
+**/launchSettings.json
 .vscode/settings.json
+server-new/
