@@ -1,45 +1,42 @@
-using System.Linq;
 using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Logging;
 using server.Models;
 
-namespace server.Hubs
+namespace server.Hubs;
+
+public interface IMessageClient
 {
-    public interface IMessageClient
+    Task ReceiveMessage(Message message);
+    Task ReceiveMessage(string username, Message message);
+}
+public class MessageHub : Hub<IMessageClient>
+{
+    private readonly ILogger _logger;
+
+    public MessageHub(ILogger<MessageHub> logger)
     {
-        Task ReceiveMessage(Message message);
-        Task ReceiveMessage(string username, Message message);
+        _logger = logger;
     }
-    public class MessageHub : Hub<IMessageClient>
+    public Task SendMessage(Message message)
     {
-        private readonly ILogger _logger;
+        _logger.LogInformation($"Sending message with title {message.Title}");
 
-        public MessageHub(ILogger<MessageHub> logger)
-        {
-            _logger = logger;
-        }
-        public Task SendMessage(Message message)
-        {
-            _logger.LogInformation($"Sending message with title {message.Title}");
+        return Clients.All.ReceiveMessage(message);
+    }
+    public Task SendMessageToUser(string username, Message message)
+    {
+        return Clients.All.ReceiveMessage(username, message);
+    }
+    public override async Task OnConnectedAsync()
+    {
+        _logger.LogInformation("Connected: {userId}", Context.UserIdentifier);
 
-            return Clients.All.ReceiveMessage(message);
-        }
-        public Task SendMessageToUser(string username, Message message)
+        var clientCode = Context.User?.Claims.SingleOrDefault(c => c.Type == ClaimTypes.GroupSid)?.Value;
+        if (!string.IsNullOrEmpty(clientCode))
         {
-            return Clients.All.ReceiveMessage(username, message);
+            _logger.LogInformation($"With group of {clientCode}");
+            await Groups.AddToGroupAsync(Context.ConnectionId, clientCode);
         }
-        public override async Task OnConnectedAsync()
-        {
-            _logger.LogInformation($"Connected: {Context.UserIdentifier}");
-            var clientCode = Context.User.Claims.SingleOrDefault(c => c.Type == ClaimTypes.GroupSid)?.Value;
-            if (!string.IsNullOrEmpty(clientCode))
-            {
-                _logger.LogInformation($"With group of {clientCode}");
-                await Groups.AddToGroupAsync(Context.ConnectionId, clientCode);
-            }
-            await base.OnConnectedAsync();
-        }
+        await base.OnConnectedAsync();
     }
 }
