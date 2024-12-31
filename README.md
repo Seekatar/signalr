@@ -1,15 +1,15 @@
-# SignalR Sample ASP.NET Core 3.1 to Vue
+# SignalR Sample ASP.NET Core 9.0 to Vue
 
 ![.NET Core](https://github.com/Seekatar/signalr/workflows/.NET%20Core/badge.svg)
 ![Vue CI](https://github.com/Seekatar/signalr/workflows/Vue%20CI/badge.svg)
 
 Sample project that uses a .NET Core ASP.NET project for a server that uses SignalR to send messages to a VueJs client.
 
-Started with older sample code from [here](https://www.dotnetcurry.com/aspnet-core/1480/aspnet-core-vuejs-signalr-app)
+Started with older sample code from [here](https://www.dotnetcurry.com/aspnet-core/1480/aspnet-core-vuejs-signalr-app). Updated in December 2024 to .NET 9.
 
 ## GitHub Actions
 
-First project to use GitHub Actions
+This uses GitHub Actions to build the apps
 
 ### Links
 

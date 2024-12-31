@@ -3,12 +3,12 @@ name: .NET Core
 on:
   push:
     branches: [ main ]
-    paths: 
+    paths:
     - 'server/**'
     - '.github/workflows/dotnet-core.yml'
   pull_request:
     branches: [ main ]
-    paths: 
+    paths:
     - 'server/**'
     - '.github/workflows/dotnet-core.yml'
 
@@ -19,16 +19,20 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
+
+    - uses: actions/setup-dotnet@v1
+      name: Setup .NET Core
       with:
-        dotnet-version: 3.1.x
+        dotnet-version: 9.0.x
+
     - name: Install dependencies
       run: dotnet restore
       working-directory: ./server
+
     - name: Build
       run: dotnet build --configuration Release --no-restore
       working-directory: ./server
+
     - name: Test
       run: dotnet test --no-restore --verbosity normal
       working-directory: ./server
