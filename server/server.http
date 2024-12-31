@@ -1,0 +1,18 @@
+@server_HostAddress = https://localhost:5001
+@userId = wilmaflintstone
+
+# @name login
+GET {{server_HostAddress}}/message/jwt?userId=fredflintstone
+Accept: application/json
+
+@bearerToken= {{login.response.body.token}}
+
+###
+GET {{server_HostAddress}}/message?msg=this%20is%20a%20test
+Authorization: Bearer {{bearerToken}}
+Content-Type: application/json
+
+###
+GET {{server_HostAddress}}/message/send-to?userId={{userId}}&msg=this%20is%20a%20test
+Authorization: Bearer {{bearerToken}}
+Content-Type: application/json

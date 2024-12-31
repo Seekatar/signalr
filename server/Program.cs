@@ -1,6 +1,8 @@
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using server.Hubs;
 
@@ -24,16 +26,21 @@ builder.Services.AddCors(options =>
                 }));
 builder.Services.AddControllers();
 
-var appSettingsSection = builder.Configuration.GetSection("AppSettings");
+var appSettingsSection = builder.Configuration.GetSection(AppSettings.SectionName);
 builder.Services.Configure<AppSettings>(appSettingsSection);
 
 // configure jwt authentication
 var appSettings = appSettingsSection.Get<AppSettings>();
-if (appSettings == null)
+if (appSettings == null || string.IsNullOrEmpty(appSettings.Secret))
 {
     throw new Exception("AppSettings not found in appsettings.json");
 }
 var key = Encoding.ASCII.GetBytes(appSettings.Secret);
+
+builder.Services.AddOptions<AppSettings>()
+    .Bind(builder.Configuration.GetSection(AppSettings.SectionName))
+    .ValidateDataAnnotations() // validate when called
+    .ValidateOnStart(); // also on start
 
 builder.Services.AddAuthentication(options =>
     {
@@ -92,6 +99,9 @@ app.Run();
 
 public class AppSettings
 {
+    public const string SectionName = "AppSettings";
+
+    [Required]
     public required string Secret { get; set; }
 }
 
