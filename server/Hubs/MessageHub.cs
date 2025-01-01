@@ -9,6 +9,7 @@ public interface IMessageClient
     Task ReceiveMessage(Message message);
     Task ReceiveMessage(string username, Message message);
 }
+
 public class MessageHub : Hub<IMessageClient>
 {
     private readonly ILogger _logger;
@@ -17,26 +18,16 @@ public class MessageHub : Hub<IMessageClient>
     {
         _logger = logger;
     }
-    public Task SendMessage(Message message)
-    {
-        _logger.LogInformation($"Sending message with title {message.Title}");
-
-        return Clients.All.ReceiveMessage(message);
-    }
-    public Task SendMessageToUser(string username, Message message)
-    {
-        return Clients.All.ReceiveMessage(username, message);
-    }
     public override async Task OnConnectedAsync()
     {
-        _logger.LogInformation("Connected: {userId}", Context.UserIdentifier);
-
+        var group = "";
         var clientCode = Context.User?.Claims.SingleOrDefault(c => c.Type == ClaimTypes.GroupSid)?.Value;
         if (!string.IsNullOrEmpty(clientCode))
         {
-            _logger.LogInformation($"With group of {clientCode}");
+            group = $" with group of {clientCode}";
             await Groups.AddToGroupAsync(Context.ConnectionId, clientCode);
         }
+        _logger.LogInformation("Connected: {userId}{group}", Context.UserIdentifier, group);
         await base.OnConnectedAsync();
     }
 }

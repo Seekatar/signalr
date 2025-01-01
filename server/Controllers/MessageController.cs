@@ -30,13 +30,13 @@ public class MessageController : ControllerBase
 
     [HttpGet("jwt")]
     [AllowAnonymous]
-    public IActionResult GetJwt([FromQuery][Required] string userId = "fflintstone")
+    public IActionResult GetJwt([FromQuery][Required] string userId = "fflintstone", string group = "INS1")
     {
-        _logger.LogDebug("Getting jwt for {userId}", userId);
-        return Ok(FakeJwt(userId));
+        _logger.LogInformation("Getting jwt for {userId} with group {group}", userId, group);
+        return Ok(FakeJwt(userId, group));
     }
 
-    private string FakeJwt(string userId)
+    private string FakeJwt(string userId, string group)
     {
         // generate token that is valid for 7 days
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -45,14 +45,14 @@ public class MessageController : ControllerBase
         {
             Subject = new ClaimsIdentity(new Claim[]
             {
-                new Claim(ClaimTypes.Name, userId),
-                new Claim(ClaimTypes.Actor, userId),
-                new Claim(ClaimTypes.Email, $"{userId}@rockhead.com"),
-                new Claim(ClaimTypes.GroupSid, "INS1") // " http://schemas.microsoft.com/ws/2008/06/identity/claims/clientCode", "INS1")
+                new(ClaimTypes.Name, userId),
+                new (ClaimTypes.Actor, userId),
+                new (ClaimTypes.Email, $"{userId}@rockhead.com"),
+                new (ClaimTypes.GroupSid, group) // " http://schemas.microsoft.com/ws/2008/06/identity/claims/clientCode", "INS1")
                 // this is what SignalR uses as ClaimsPrincipal by default, you can change the default
                 // with an IUserIdProvider
                 // https://docs.microsoft.com/en-us/aspnet/core/signalr/authn-and-authz?view=aspnetcore-3.1#use-claims-to-customize-identity-handling
-                // new Claim(ClaimTypes.NameIdentifier, userId)
+                // new (ClaimTypes.NameIdentifier, userId)
             }),
             Expires = DateTime.UtcNow.AddDays(7),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -75,7 +75,7 @@ public class MessageController : ControllerBase
         IClientProxy? proxy = null;
         if (userId.StartsWith('@'))
         {
-            proxy = _hubContext.Clients.Group(userId.Substring(1));
+            proxy = _hubContext.Clients.Group(userId[1..]);
         }
         else
         {

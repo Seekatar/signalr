@@ -1,18 +1,26 @@
-@server_HostAddress = https://localhost:5001
+@server_HostAddress = http://localhost:5000
+@userId = fredflintstone
+@group = INS1
 @userId = wilmaflintstone
+@group = INS1
 
 # @name login
-GET {{server_HostAddress}}/message/jwt?userId=fredflintstone
+GET {{server_HostAddress}}/message/jwt?userId={{userId}}&group={{group}}
 Accept: application/json
 
 @bearerToken= {{login.response.body.token}}
 
 ###
-GET {{server_HostAddress}}/message?msg=this%20is%20a%20test
+GET {{server_HostAddress}}/message?msg=This is a test at {{$datetime rfc1123}}
 Authorization: Bearer {{bearerToken}}
 Content-Type: application/json
 
 ###
-GET {{server_HostAddress}}/message/send-to?userId={{userId}}&msg=this%20is%20a%20test
+GET {{server_HostAddress}}/message/send-to?userId={{userId}}&msg=This is a test at {{$datetime rfc1123}}
+Authorization: Bearer {{bearerToken}}
+Content-Type: application/json
+
+### @name groupTest
+GET {{server_HostAddress}}/message/send-to?userId=@INS1&msg=This is a group test at {{$datetime rfc1123}}
 Authorization: Bearer {{bearerToken}}
 Content-Type: application/json
