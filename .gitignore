@@ -392,3 +392,4 @@ server/.idea/.idea.server.dir/.idea/indexLayout.xml
 server/.idea/.idea.server.dir/.idea/vcs.xml
 **/launchSettings.json
 .vscode/settings.json
+.idea

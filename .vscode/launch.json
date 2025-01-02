@@ -15,7 +15,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/server/bin/Debug/netcoreapp5.0/server.dll",
+            "program": "${workspaceFolder}/server/bin/Debug/net9.0/server.dll",
             "args": [],
             "cwd": "${workspaceFolder}/server",
             "stopAtEntry": false,
@@ -25,7 +25,8 @@
                 "uriFormat": "%s/message?msg=Launched server"
             },
             "env": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "ASPNETCORE_URLS": "https://localhost:5000"
             },
             "sourceFileMap": {
                 "/Views": "${workspaceFolder}/Views"
