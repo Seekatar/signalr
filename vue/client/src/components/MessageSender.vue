@@ -1,75 +1,167 @@
 <template>
-  <div class="hello">
-    <v-container>
-      <v-row>
-        <v-col cols="8">
-          <v-text-field v-model="userId" label="Send to userId, @INS1 for group, empty for all"></v-text-field>
-        </v-col>
-      </v-row>
-      <v-row>
-        <v-col cols="4">
-          <v-text-field v-model="message" label="Message"></v-text-field>
-        </v-col>
-        <v-col cols="4">
-          <v-combobox
-            v-model="msgType"
-            :items="msgTypes"
-            label="Select a message type"
-          >
-          </v-combobox>
-        </v-col>
-      </v-row>
-      <v-row>
-        <v-col cols="8">
-          <v-btn v-on:click="sendMessage" :disabled='message.length == 0'>Send Message</v-btn>
-        </v-col>
-      </v-row>
-    </v-container>
+  <div class="message-form">
+    <h2>Send a Message</h2>
+    <form @submit.prevent="sendMessage">
+      <div>
+        <label for="message">Message:</label>
+        <textarea id="message" v-model="message" placeholder="Enter your message" required></textarea>
+      </div>
+
+      <div>
+        <label for="type">Message Type:</label>
+        <select id="type" v-model="messageType" required>
+          <option value="info">Info</option>
+          <option value="success">Success</option>
+          <option value="warning">Warning</option>
+          <option value="error">Error</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="userId">User ID:</label>
+        <input type="text" id="userId" v-model="userId" placeholder="Enter user Id or @group" />
+      </div>
+
+      <button type="submit">Send Message</button>
+    </form>
+
+    <p v-if="responseMessage">{{ responseMessage }}</p>
+
+    <Toast v-if="toastMessage" :message="toastMessage" :timestamp="toastTimestamp" :type="toastType" />
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
 import axios from "axios";
+import { HubConnectionBuilder, HubConnection } from '@microsoft/signalr';
+import Toast from './Toast.vue';
 
-@Component
-export default class MessageSender extends Vue {
-  @Prop() private msg!: string;
-  message = "";
-  userId = "";
-
-  // this just "happen" to match up with
-  // Vuetify colors for snackbar
-  msgTypes = ["info", "success", "warning", "error"];
-  msgType = "info";
-
-  sendMessage() {
-    console.log(`Sending message ${this.message} to ${this.userId} of type ${this.msgType}`);
-    if (this.userId.length <= 0) {
-      axios.get(`https://localhost:5001/message?msg=${this.message}&type=${this.msgType}`);
-    } else {
-      axios.get(
-        `https://localhost:5001/message/send-to?msg=${this.message}&userId=${this.userId}&type=${this.msgType}`
-      );
-    }
-  }
+interface ToastMessage {
+  text: string;
+  type: string;
+  timestamp: string;
 }
+export default {
+  name: 'MessageSender',
+  components: {
+    Toast,
+  },
+  data() {
+    return {
+      message: '',
+      messageType: 'info',
+      userId: '',
+      responseMessage: '',
+      toastMessage: '',
+      toastTimestamp: '',
+      toastType: 'info',
+      connection: null as HubConnection | null,
+    };
+  },
+  async mounted() {
+    console.log('MessageSender mounted');
+    // Set up SignalR connection
+    this.connection = new HubConnectionBuilder()
+      .withUrl('https://localhost:5000/messagehub')
+      .withAutomaticReconnect()
+      .build();
+    // if (this.connection) {
+      try {
+        await this.connection.start();
+        console.log('SignalR connected.');
+
+        // Listen for ReceiveMessage events
+        this.connection.on('ReceiveMessage', (msg) => {
+          this.showToast(msg);
+        });
+      } catch (error) {
+        console.error('Error connecting to SignalR:', error);
+      }
+    // } else {
+    //   console.error('SignalR connection is null.');
+    // }
+  },
+  methods: {
+    async sendMessage() {
+      try {
+        let response = null;
+        if (this.userId) {
+          response = await axios.get(`https://localhost:5000/message/send-to?msg=${this.message}&type=${this.messageType}&userId=${this.userId}`);
+        } else {
+          response = await axios.get(`https://localhost:5000/message?msg=${this.message}&type=${this.messageType}`);
+        }
+        this.responseMessage = 'Message sent successfully: ' + response.data;
+      } catch (error) {
+        console.error('Error sending message:', error);
+        this.responseMessage = 'Failed to send the message. Please try again.';
+      }
+      // Clear the responseMessage after 5 seconds
+      setTimeout(() => {
+        this.responseMessage = '';
+      }, 5000);
+    },
+    showToast(message: ToastMessage) {
+      this.toastMessage = message.text;
+      this.toastType = message.type;
+      this.toastTimestamp = message.timestamp;
+
+      setTimeout(() => {
+        this.toastMessage = '';
+      }, 5000); // Clear toast after 5 seconds
+    },
+  },
+};
+
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
-  margin: 40px 0 0;
+.message-form {
+  width: 400px;
+  margin: 0 auto;
 }
-ul {
-  list-style-type: none;
-  padding: 0;
+
+label {
+  display: block;
+  margin: 0.5rem 0 0.2rem;
 }
-li {
-  display: inline-block;
-  margin: 0 10px;
+
+textarea,
+input,
+select {
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
-a {
-  color: #42b983;
+
+button {
+  padding: 0.5rem 1rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
+
+button:hover {
+  background-color: #0056b3;
+}
+
+p {
+  margin-top: 1rem;
+  max-width: 400px;
+  color: green;
+}
+/* .response-message {
+  margin-top: 1rem;
+  padding: 0.5rem;
+  background-color: #f8f9fa;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  color: #333;
+  word-wrap: break-word;
+  word-break: break-word;
+} */
 </style>

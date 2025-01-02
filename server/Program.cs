@@ -12,14 +12,13 @@ const string CorsPolicy = "corsLocalhost";
 
 builder.Services.AddOpenApi();
 
-
 builder.Services.AddSignalR();
 builder.Services.AddCors(options =>
                 options.AddPolicy(name: CorsPolicy, builder =>
                 {
                     builder
                     // .AllowAnyOrigin()  // can't use with allow creds
-                    .WithOrigins("http://localhost:8080", "http://localhost:8081", "http://localhost:8082") // use https on client and these settings get CORS to work
+                    .WithOrigins("http://localhost:8080", "http://localhost:8081", "http://localhost:8082", "http://localhost:5173") // use https on client and these settings get CORS to work
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();
@@ -89,7 +88,9 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-//app.UseHttpsRedirection();
+app.UseCors(CorsPolicy);
+
+app.UseHttpsRedirection();
 
 app.MapControllers();
 

@@ -17,10 +17,6 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [12.x]
-
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
@@ -30,7 +26,6 @@ jobs:
     - name: Npm Install
       run: npm install
       working-directory: ./vue/client
-    # disabled for now since Vue code really outdated
-    # - name: Build
-    #   run: npm run build --if-present
-    #   working-directory: ./vue/client
+    - name: Build
+      run: npm run build --if-present
+      working-directory: ./vue/client

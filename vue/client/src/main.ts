@@ -1,16 +1,6 @@
-import Vue from "vue";
-import App from "./App.vue";
-import router from "./router";
-//import "./message-hub";
-import messageHub from "./message-hub";
-import vuetify from "./plugins/vuetify";
+import './assets/main.css'
 
-Vue.config.productionTip = false;
+import { createApp } from 'vue'
+import App from './App.vue'
 
-new Vue({
-  router,
-  vuetify,
-  render: h => h(App)
-}).$mount("#app");
-
-Vue.use(messageHub);
+createApp(App).mount('#app')
