@@ -33,9 +33,14 @@
 
 <script lang="ts">
 import axios from "axios";
-import { HubConnectionBuilder } from '@microsoft/signalr';
+import { HubConnectionBuilder, HubConnection } from '@microsoft/signalr';
 import Toast from './Toast.vue';
 
+interface ToastMessage {
+  text: string;
+  type: string;
+  timestamp: string;
+}
 export default {
   name: 'MessageSender',
   components: {
@@ -50,7 +55,7 @@ export default {
       toastMessage: '',
       toastTimestamp: '',
       toastType: 'info',
-      connection: null,
+      connection: null as HubConnection | null,
     };
   },
   async mounted() {
@@ -60,18 +65,21 @@ export default {
       .withUrl('https://localhost:5000/messagehub')
       .withAutomaticReconnect()
       .build();
+    // if (this.connection) {
+      try {
+        await this.connection.start();
+        console.log('SignalR connected.');
 
-    try {
-      await this.connection.start();
-      console.log('SignalR connected.');
-
-      // Listen for ReceiveMessage events
-      this.connection.on('ReceiveMessage', (msg) => {
-        this.showToast(msg);
-      });
-    } catch (error) {
-      console.error('Error connecting to SignalR:', error);
-    }
+        // Listen for ReceiveMessage events
+        this.connection.on('ReceiveMessage', (msg) => {
+          this.showToast(msg);
+        });
+      } catch (error) {
+        console.error('Error connecting to SignalR:', error);
+      }
+    // } else {
+    //   console.error('SignalR connection is null.');
+    // }
   },
   methods: {
     async sendMessage() {
@@ -92,7 +100,7 @@ export default {
         this.responseMessage = '';
       }, 5000);
     },
-    showToast(message) {
+    showToast(message: ToastMessage) {
       this.toastMessage = message.text;
       this.toastType = message.type;
       this.toastTimestamp = message.timestamp;
